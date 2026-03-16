@@ -1,9 +1,9 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -Isrc
 
-.PHONY: all test_registers test_parser test_instr_table test_symbols test_encode
+.PHONY: all test_registers test_parser test_instr_table test_symbols test_encode test_assembler
 
-all: test_registers test_parser test_instr_table test_symbols test_encode
+all: test_registers test_parser test_instr_table test_symbols test_encode test_assembler
 
 test_registers:
 	$(CC) $(CFLAGS) tests/test_registers.c src/registers.c -o test_registers
@@ -19,3 +19,6 @@ test_symbols:
 
 test_encode:
 	$(CC) $(CFLAGS) tests/test_encode.c src/encode.c -o test_encode
+
+test_assembler:
+	$(CC) $(CFLAGS) tests/test_assembler.c src/assembler.c src/encode.c src/parser.c src/instr_table.c src/registers.c src/symbols.c -o test_assembler
