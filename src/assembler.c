@@ -114,18 +114,42 @@ int assemble(const char *lines[], size_t line_count, uint32_t *out, size_t *out_
                 break;
             }
             case FMT_I: {
-                if (pl.operand_count != 3) {
-                    errorf(errbuf, errlen, "expected 3 operands for %s on line %zu", pl.mnemonic, i + 1);
+                if (pl.operand_count == 3) {
+                    int rd = parse_reg(pl.operands[0]);
+                    int rs1 = parse_reg(pl.operands[1]);
+                    int32_t imm;
+                    if (rd < 0 || rs1 < 0 || parse_imm(pl.operands[2], &imm) != 0) {
+                        errorf(errbuf, errlen, "invalid operand for %s on line %zu", pl.mnemonic, i + 1);
+                        return -1;
+                    }
+                    word = encode_i((uint32_t)imm, (uint32_t)rs1, inst->funct3, (uint32_t)rd, inst->opcode);
+                } else if (pl.operand_count == 2) {
+                    // Load format: rd, imm(rs1)
+                    int rd = parse_reg(pl.operands[0]);
+                    char *mem = pl.operands[1];
+                    char *paren = strchr(mem, '(');
+                    if (!paren) {
+                        errorf(errbuf, errlen, "invalid memory operand for %s on line %zu", pl.mnemonic, i + 1);
+                        return -1;
+                    }
+                    *paren = '\0';
+                    char *endparen = strchr(paren + 1, ')');
+                    if (!endparen) {
+                        errorf(errbuf, errlen, "invalid memory operand for %s on line %zu", pl.mnemonic, i + 1);
+                        return -1;
+                    }
+                    *endparen = '\0';
+                    int32_t imm;
+                    int rs1 = parse_reg(paren + 1);
+                    if (rd < 0 || rs1 < 0 || parse_imm(mem, &imm) != 0) {
+                        errorf(errbuf, errlen, "invalid operand for %s on line %zu", pl.mnemonic, i + 1);
+                        return -1;
+                    }
+                    word = encode_i((uint32_t)imm, (uint32_t)rs1, inst->funct3, (uint32_t)rd, inst->opcode);
+                } else {
+                    errorf(errbuf, errlen, "expected 2 or 3 operands for %s on line %zu", pl.mnemonic, i + 1);
                     return -1;
                 }
-                int rd = parse_reg(pl.operands[0]);
-                int rs1 = parse_reg(pl.operands[1]);
-                int32_t imm;
-                if (rd < 0 || rs1 < 0 || parse_imm(pl.operands[2], &imm) != 0) {
-                    errorf(errbuf, errlen, "invalid operand for %s on line %zu", pl.mnemonic, i + 1);
-                    return -1;
-                }
-                word = encode_i((uint32_t)imm, (uint32_t)rs1, inst->funct3, (uint32_t)rd, inst->opcode);
                 break;
             }
             case FMT_S: {
@@ -193,6 +217,20 @@ int assemble(const char *lines[], size_t line_count, uint32_t *out, size_t *out_
                 }
                 int32_t imm = target - (int32_t)pc;
                 word = encode_j((uint32_t)imm, (uint32_t)rd, inst->opcode);
+                break;
+            }
+            case FMT_U: {
+                if (pl.operand_count != 2) {
+                    errorf(errbuf, errlen, "expected 2 operands for %s on line %zu", pl.mnemonic, i + 1);
+                    return -1;
+                }
+                int rd = parse_reg(pl.operands[0]);
+                int32_t imm;
+                if (rd < 0 || parse_imm(pl.operands[1], &imm) != 0) {
+                    errorf(errbuf, errlen, "invalid operand for %s on line %zu", pl.mnemonic, i + 1);
+                    return -1;
+                }
+                word = encode_u((uint32_t)imm, (uint32_t)rd, inst->opcode);
                 break;
             }
             default:

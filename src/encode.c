@@ -57,3 +57,9 @@ uint32_t encode_j(uint32_t imm21, uint32_t rd, uint32_t opcode) {
            ((rd & 0x1F) << 7) |
            (opcode & 0x7F);
 }
+
+uint32_t encode_u(uint32_t imm20, uint32_t rd, uint32_t opcode) {
+    return ((imm20 & 0xFFFFF) << 12) |
+           ((rd & 0x1F) << 7) |
+           (opcode & 0x7F);
+}
