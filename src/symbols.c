@@ -13,6 +13,10 @@ typedef struct {
 static SymbolEntry g_symbols[SYMBOLS_MAX];
 static size_t g_symbol_count = 0;
 
+void symbols_reset(void) {
+    g_symbol_count = 0;
+}
+
 int symbols_add(const char *name, int32_t addr) {
     if (!name || name[0] == '\0') {
         return -1;

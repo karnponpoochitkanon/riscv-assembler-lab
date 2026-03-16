@@ -23,6 +23,11 @@ extern "C" {
 int symbols_add(const char *name, int32_t addr);
 
 /**
+ * Reset the global symbol table (clears all symbols).
+ */
+void symbols_reset(void);
+
+/**
  * Find a symbol address by name.
  *
  * @param name Label name to search for.
