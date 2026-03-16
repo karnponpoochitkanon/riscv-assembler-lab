@@ -1,9 +1,21 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -Isrc
 
-.PHONY: all test_registers test_parser test_instr_table test_symbols test_encode test_assembler
+SRC=src/main.c src/assembler.c src/parser.c \
+    src/registers.c src/instr_table.c \
+    src/symbols.c src/encode.c
 
-all: test_registers test_parser test_instr_table test_symbols test_encode test_assembler
+.PHONY: all assembler clean test_registers test_parser test_instr_table test_symbols test_encode test_assembler
+
+all: assembler
+
+assembler:
+	$(CC) $(CFLAGS) $(SRC) -o assembler
+
+clean:
+	rm -f assembler
+
+# unit tests
 
 test_registers:
 	$(CC) $(CFLAGS) tests/test_registers.c src/registers.c -o test_registers
